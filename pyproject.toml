@@ -1,7 +1,7 @@
 [project]
 name = "axiom"
 version = "0.1.0"
-description = "Add your description here"
+description = "Evaluate biological signal in cellular image embeddings"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -12,4 +12,8 @@ dependencies = [
     "pandas>=3.0.6",
     "pyarrow>=25.0.1",
     "requests>=2.34.2",
+    "rdkit>=2024.3.1",
+    "scipy>=1.13.0",
+    "scikit-learn>=1.6.0",
+    "harmonypy>=2.0.2",
 ]

@@ -1,115 +1,75 @@
 # Axiom Take-Home: Biological Signal in Image Embeddings
 
-Analysis of PHH image embeddings and assay measurements to assess how well they capture compound pathway, target, and biological-activity annotations. The project compares raw PCA, normalized PCA, DINO embeddings (stored in the `brightfield` column), assay features, and combined representations.
-
-The workflow includes exploratory analysis, multilabel annotation prediction, nearest-neighbor retrieval, cluster enrichment, and checks for plate/batch confounding.
+This repository evaluates whether raw PCA, normalized PCA, and brightfield (DINO) embeddings capture compound biology. It compares them with assay-feature and label-frequency baselines using pathway/target prediction, annotation and biological-activity retrieval, clustering, replicate consistency, and plate/batch confounding analyses.
 
 ## Setup
 
-Use Python 3.12 (the version selected in `.python-version`) and [uv](https://docs.astral.sh/uv/). Run commands from the repository root:
+Use Python 3.12 and [uv](https://docs.astral.sh/uv/):
 
 ```bash
 uv sync --locked
 ```
 
-Place the input dataset at:
+Place the input Parquet dataset at `data/phh_prod_image_data_oasis_with_dmso.parquet`. It is not included in this repository and is not downloaded by the scripts. Required columns and assay features are listed in `analysis/annotation_model_utils.py`.
 
-```text
-data/phh_prod_image_data_oasis_with_dmso.parquet
-```
+## Main analyses
 
-The dataset must be supplied separately if it is absent from your checkout; the analysis scripts do not download it. They expect compound identifiers, pathway/target/activity annotations, experimental metadata, the three embedding columns, and the assay columns listed in `analysis/annotation_model_utils.py`.
-
-## Explore the data
+Run commands from the repository root. Outputs are written under `results/`.
 
 ```bash
-uv run jupyter lab analysis/data_analysis.ipynb
-```
-
-The notebook loads the dataset using a path relative to `analysis/`; use that directory as the notebook kernel's working directory. It provides the exploratory starting point. The scripts below reproduce the model comparisons and figures. `main.py` is a placeholder, not a pipeline runner.
-
-## Run the analysis
-
-Run these steps in order. Scripts write to `results/` and replace existing outputs with the same names.
-
-### 1. Generate corrected feature arrays
-
-```bash
-uv run python analysis/correct_features.py
-```
-
-Creates matched-compound/dose plate and batch corrections, plus Harmony integration variants when `harmonypy` is available. The output arrays are required by the compound/batch comparisons and retrieval scripts.
-
-### 2. Compare pathway and target prediction
-
-```bash
+# Pathway/target prediction and embedding-cluster enrichment
 uv run python analysis/compare_annotations_held_out_compound.py
 uv run python analysis/compare_annotations_held_out_batch.py
 uv run python analysis/compare_annotations_chemical_split.py
-```
 
-The comparisons use per-label logistic regression and a label-frequency baseline. Replicate-well predictions are aggregated to the compound level, with macro/micro F1 for the top three predicted labels, fold scores, and bootstrap intervals.
-
-| Validation protocol | What is held out |
-| --- | --- |
-| Compound | Five-fold grouped validation keeps all wells for a compound together. |
-| Batch | Each batch is held out, and compounds present in that batch are excluded from training. |
-| Chemical group | Five-fold grouped validation holds out entire scaffold groups; acyclic compounds are grouped using fingerprint similarity. |
-
-Chemical splitting resolves compound structures through PubChem and caches them in `results/pubchem_structure_lookup.csv`. Uncached lookups require internet access. Optional corrections can be supplied in `data/compound_structure_overrides.csv` with `compound_id` and `smiles` columns, plus an optional `cid`. Compounds without usable structures are excluded from chemical-group evaluation; inspect `results/chemical_split_structure_audit.csv` for coverage.
-
-The compound and batch runs also produce embedding-cluster enrichment tables. Comparison runs save fitted models and ranked predictions for unannotated compounds under `results/`.
-
-### 3. Evaluate retrieval, stability, and confounding
-
-```bash
+# Retrieval, stability, and technical confounding
 uv run python analysis/evaluate_embedding_retrieval.py
 uv run python analysis/evaluate_activity_text_retrieval.py
 uv run python analysis/evaluate_normalized_pca_stability.py
 uv run python analysis/evaluate_confounding.py
-```
 
-Annotation retrieval checks whether nearby training compounds share pathway or target labels. Activity retrieval measures similarity between biological-activity descriptions using training-fitted TF-IDF features. Both evaluate neighborhoods of 1, 3, 5, and 10 compounds across the three validation protocols.
-
-The stability script requires the chemical-split audit from step 2. The confounding analysis probes technical information in the representations and compares it with the biological evaluation metrics.
-
-An optional text-only annotation baseline is available separately:
-
-```bash
-uv run python analysis/predict_annotations_from_activity_text.py
-```
-
-### 4. Generate figures
-
-```bash
+# Figures
 uv run python plots/plot_annotation_results.py
 uv run python plots/plot_normalized_pca_results.py
 ```
 
-## Outputs and repository layout
+The compound split keeps all wells from a compound together. The batch split tests a held-out batch and removes test compounds from training. The chemical split holds out scaffold/similarity groups; it uses PubChem lookups for missing structures and caches them under `results/chemical_split/`. Uncached lookups need internet access. Compounds without usable structures are omitted from that split.
 
-| Location | Contents |
-| --- | --- |
-| `analysis/data_analysis.ipynb` | Exploratory notebook |
-| `analysis/` | Feature correction, prediction, retrieval, and evaluation scripts |
-| `plots/` | Figure generation from result tables |
-| `results/annotation_model_comparison_*.csv` | Prediction metrics by representation and validation protocol |
-| `results/annotation_prediction_stability_*.csv` | Fold scores and bootstrap intervals |
-| `results/cluster_label_enrichment_*.csv` | Cluster enrichment with multiple-testing-adjusted q-values |
-| `results/embedding_retrieval_*.csv` | Annotation retrieval metrics and neighbors |
-| `results/biological_activity_retrieval_*.csv` | Activity-text retrieval metrics, neighbors, and per-query scores |
-| `results/confounding_*.csv` | Technical-confounding probes and comparisons with biology scores |
-| `results/models/` | Fitted annotation models |
-| `results/unannotated_compound_*.csv` | Ranked annotation predictions and activity-text neighbors |
-| `results/*.png` | Generated comparison figures |
+To create matched-compound/dose correction arrays, run `analysis/correct_features.py` first. Those corrections use profiles across the dataset, so results using them are transductive. Fold-safe Harmony can instead be evaluated on compound and chemical-group holdouts:
 
-## Interpretation
+```bash
+uv run python analysis/evaluate_harmony.py --protocols held_out_compound held_out_chemical_group
+```
 
-- Plate/batch corrections are estimated across the dataset without annotation labels. Because held-out wells contribute to these corrections, corrected scores are transductive comparisons, not strict prospective estimates for an entirely unseen plate or batch.
-- Chemical-group evaluation uses the subset with resolved structures, so its scores may reflect a different compound population.
-- Activity-text similarity and annotation enrichment measure agreement with existing descriptions and labels; they do not establish a compound's mechanism of action.
-- Use the fold variation, bootstrap intervals, and enrichment q-values alongside aggregate scores when comparing representations.
+Harmony is fitted using training folds only. It cannot estimate a correction for a wholly unseen batch without calibration data from that batch.
+
+## Additional evaluations
+
+The drug-attribute benchmark predicts cellular measurements and public pathway/target annotations, and evaluates cross-plate replicate retrieval:
+
+```bash
+uv run python analysis/evaluate_drug_attributes.py
+uv run python plots/plot_drug_attributes.py
+```
+
+Public annotation snapshots and source/matching notes are in `data/public_annotations/`. To refresh the local joins and run those benchmarks:
+
+```bash
+uv run python analysis/import_public_annotations.py --offline
+uv run python analysis/evaluate_public_annotations.py
+uv run python plots/plot_public_annotations.py
+```
+
+The Broad source files include a non-commercial-use notice; see `data/public_annotations/manifest.json` and check the source terms before redistribution or commercial use. Public annotation matches and all retrieval/enrichment results are associative evidence, not confirmation of mechanism or causality.
+
+## Results and interpretation
+
+Results are grouped by task under `results/`: `annotation_prediction/`, `annotation_retrieval/`, `activity_text_retrieval/`, `cluster_enrichment/`, `replicate_analysis/`, `confounding/`, `feature_processing/`, `drug_attributes/`, `public_annotations/`, and `chemical_split/`. Figures are generated from result tables by scripts in `plots/`.
+
+Use fold variation and bootstrap intervals when comparing scores. Missing annotations are not necessarily negative labels. Chemical-group results cover only compounds with usable structures, and the supplied embeddings may have been preprocessed upstream. Batch correction, retrieval, and cluster enrichment can expose trade-offs; none alone establishes that a representation is biologically superior.
+
+The local source dataset, large model files, and large neighbor tables are excluded from ordinary Git commits. Recreate them by running the analysis scripts. An exploratory notebook is available at `analysis/data_analysis.ipynb`.
 
 ## License
 
-[MIT](LICENSE).
+Code: [MIT](LICENSE). Data-source terms may differ; see the source manifest before redistributing cached annotations.

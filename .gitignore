@@ -203,6 +203,21 @@ cython_debug/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
+# Local source data and generated model artifacts are reproducible and too
+# large or environment-specific for ordinary GitHub commits.
+data/*.parquet
+results/**/*.npz
+results/annotation_prediction/models/
+results/drug_attributes/annotation_predictions/
+results/drug_attributes/regression_predictions/
+results/annotation_retrieval/*neighbors.csv
+results/activity_text_retrieval/*neighbors.csv
+results/activity_text_retrieval/*per_query.csv
+results/replicate_analysis/*neighbors.csv
+results/replicate_analysis/*per_query.csv
+results/feature_processing/*per_query.csv
+results/feature_processing/additional_retrieval_diagnostics.csv
+
 # Ruff stuff:
 .ruff_cache/
 
