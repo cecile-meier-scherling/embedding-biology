@@ -1,4 +1,4 @@
-# Axiom Take-Home: Biological Signal in Image Embeddings
+# Biological Signal in Image Embeddings
 
 This repository evaluates whether raw PCA, normalized PCA, and brightfield (DINO) embeddings capture compound biology. It compares them with assay-feature and label-frequency baselines using pathway/target prediction, annotation and biological-activity retrieval, clustering, replicate consistency, and plate/batch confounding analyses.
 
