@@ -10,6 +10,10 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+try:
+    from report_plot_style import enlarge_report_text
+except ImportError:
+    from plots.report_plot_style import enlarge_report_text
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -187,6 +191,7 @@ def plot_metrics() -> Path:
                fontsize=11, title_fontsize=12)
     fig.suptitle("Pathway and Target Prediction Across Input Features", y=1.055, fontsize=16)
     fig.tight_layout(rect=(0, 0, 1, 0.91), h_pad=2.0, w_pad=2.0)
+    enlarge_report_text(fig)
     output = RESULTS / "annotation_prediction" / "annotation_prediction_metrics.png"
     fig.savefig(output, dpi=180, bbox_inches="tight")
     plt.close(fig)

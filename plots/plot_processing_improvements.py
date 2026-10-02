@@ -11,6 +11,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.colors import TwoSlopeNorm
+try:
+    from report_plot_style import enlarge_report_text
+except ImportError:
+    from plots.report_plot_style import enlarge_report_text
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -209,6 +213,7 @@ def plot_prediction_deltas() -> Path:
                bbox_to_anchor=(.5, .955))
     fig.suptitle("Pathway and target prediction after PCA processing", fontsize=16, y=.995)
     fig.subplots_adjust(left=.09, right=.99, top=.86, bottom=.18, wspace=.12, hspace=.14)
+    enlarge_report_text(fig)
     path = RESULTS / "feature_processing" / "processing_prediction_deltas.png"
     fig.savefig(path, dpi=220, bbox_inches="tight")
     plt.close(fig)

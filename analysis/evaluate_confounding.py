@@ -237,17 +237,17 @@ def plot_probes(probes: pd.DataFrame) -> Path:
         for bar, val in zip(bars, subset.balanced_accuracy):
             if pd.notna(val):
                 ax.text(bar.get_x() + bar.get_width()/2, val + 0.015,
-                        f"{val:.2f}", ha="center", va="bottom", fontsize=9)
-        ax.set_title(title, fontsize=13)
+                        f"{val:.2f}", ha="center", va="bottom", fontsize=11)
+        ax.set_title(title, fontsize=16)
         ax.set_ylim(0, 1.08)
-        ax.tick_params(axis="x", rotation=20, labelsize=9)
-        ax.tick_params(axis="y", labelsize=10)
+        ax.tick_params(axis="x", rotation=20, labelsize=11)
+        ax.tick_params(axis="y", labelsize=12)
         ax.grid(axis="y", alpha=0.2)
         ax.set_axisbelow(True)
-        ax.legend(frameon=False, fontsize=9, loc="upper right")
-    axes[0].set_ylabel("Balanced accuracy", fontsize=11)
+        ax.legend(frameon=False, fontsize=12, loc="upper right")
+    axes[0].set_ylabel("Balanced accuracy", fontsize=14)
     fig.suptitle("Technical Information Recoverable from Each Representation",
-                 fontsize=15, y=0.98)
+                 fontsize=18, y=0.98)
     fig.tight_layout(rect=(0, 0, 1, 0.92), w_pad=2.0)
     output = RESULTS_DIR / "confounding" / "confounding_representation_probes.png"
     fig.savefig(output, dpi=200, bbox_inches="tight")

@@ -9,6 +9,10 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+try:
+    from report_plot_style import enlarge_report_text
+except ImportError:
+    from plots.report_plot_style import enlarge_report_text
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -132,7 +136,7 @@ def plot_task_across_features(scores: pd.DataFrame, task: str, output: Path, top
     xmin, xmax = min(extents), max(extents)
     padding = max((xmax - xmin) * .06, .015)
 
-    fig, axes = plt.subplots(1, len(FEATURES), figsize=(19, 7), sharex=True)
+    fig, axes = plt.subplots(len(FEATURES), 1, figsize=(16, 17), sharex=True)
     colors = {'held_out_compound': '#0072B2', 'held_out_batch': '#D55E00',
               'held_out_chemical_group': '#009E73'}
     task_title = 'Pathway' if task == 'pathway' else 'Target'
@@ -166,7 +170,7 @@ def plot_task_across_features(scores: pd.DataFrame, task: str, output: Path, top
         ax.set_axisbelow(True)
         ax.set_xlim(xmin - padding, xmax + padding)
         ax.set_xlabel('AP gain over prevalence baseline\n(nominal 95% CI)')
-    axes[0].set_ylabel(f'{task_title} annotation (positive compounds)')
+    fig.supylabel(f'{task_title} annotation (positive compounds)', x=.015, fontsize=15)
     handles, labels = axes[0].get_legend_handles_labels()
     if not handles:
         handles, labels = axes[1].get_legend_handles_labels()
@@ -174,7 +178,8 @@ def plot_task_across_features(scores: pd.DataFrame, task: str, output: Path, top
                bbox_to_anchor=(.5, .96))
     fig.suptitle(f'{task_title} labels: strongest and weakest for each embedding',
                  y=.995, fontsize=14)
-    fig.tight_layout(rect=(0, .02, 1, .90))
+    fig.tight_layout(rect=(.12, .04, 1, .90), h_pad=1.8)
+    enlarge_report_text(fig)
     output.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output, dpi=190, bbox_inches='tight')
     plt.close(fig)

@@ -58,7 +58,12 @@ Public annotation snapshots and source/matching notes are in `data/public_annota
 uv run python analysis/import_public_annotations.py --offline
 uv run python analysis/evaluate_public_annotations.py
 uv run python plots/plot_public_annotations.py
+uv run python plots/plot_public_annotation_uncertainty.py
 ```
+
+`results/public_annotations/public_annotation_uncertainty_variation.png` shows
+per-assay AP gains and bootstrap intervals for Tox21/DILIrank, plus per-label
+variation and label-bootstrap intervals for Broad neighbor retrieval.
 
 The Broad source files include a non-commercial-use notice; see `data/public_annotations/manifest.json` and check the source terms before redistribution or commercial use. Public annotation matches and all retrieval/enrichment results are associative evidence, not confirmation of mechanism or causality.
 

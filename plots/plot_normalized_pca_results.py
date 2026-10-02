@@ -11,6 +11,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.lines import Line2D
+try:
+    from report_plot_style import enlarge_report_text
+except ImportError:
+    from plots.report_plot_style import enlarge_report_text
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -67,6 +71,7 @@ def plot_retrieval() -> Path:
                bbox_to_anchor=(0.5, 1.02))
     fig.suptitle("Normalized PCA Annotation Retrieval", y=1.08, fontsize=15)
     fig.tight_layout()
+    enlarge_report_text(fig)
     output = RESULTS / "annotation_retrieval" / "normalized_pca_retrieval.png"
     fig.savefig(output, dpi=200, bbox_inches="tight")
     plt.close(fig)
@@ -117,6 +122,7 @@ def plot_annotation_retrieval_across_inputs() -> Path:
     fig.suptitle("Pathway and Target Annotation Retrieval Across Input Features",
                  y=1.045, fontsize=16)
     fig.tight_layout(rect=(0, 0, 1, 0.93), h_pad=1.8)
+    enlarge_report_text(fig)
     output = RESULTS / "annotation_retrieval" / "annotation_retrieval_across_features.png"
     fig.savefig(output, dpi=200, bbox_inches="tight")
     plt.close(fig)
@@ -189,6 +195,7 @@ def plot_activity_text_retrieval() -> Path:
                ncol=5, frameon=False, fontsize=11)
     fig.suptitle("Biological Activity Text Retrieval Across Input Features", y=1.075, fontsize=16)
     fig.tight_layout(rect=(0, 0, 1, 0.93))
+    enlarge_report_text(fig)
     output = RESULTS / "activity_text_retrieval" / "biological_activity_retrieval.png"
     fig.savefig(output, dpi=200, bbox_inches="tight")
     plt.close(fig)
@@ -300,6 +307,7 @@ def plot_cluster_enrichment() -> Path:
     colorbar_ax.yaxis.label.set_size(12)
     fig.suptitle("Normalized PCA Cluster Enrichment", y=0.985, fontsize=15)
     fig.subplots_adjust(left=0.27, right=0.90, bottom=0.12, top=0.90, wspace=1.00)
+    enlarge_report_text(fig)
     output = RESULTS / "cluster_enrichment" / "normalized_pca_cluster_enrichment.png"
     fig.savefig(output, dpi=200, bbox_inches="tight")
     plt.close(fig)
@@ -391,10 +399,11 @@ def plot_prediction_stability() -> Path:
                label="Fold/batch scores (gray points)"),
     ]
     fig.legend(handles=legend_handles, loc="upper center", ncol=3,
-               frameon=False, bbox_to_anchor=(0.5, 1.01), fontsize=11)
+               frameon=False, bbox_to_anchor=(0.5, 0.91), fontsize=11)
     fig.suptitle("Normalized PCA Target and Pathway Prediction Performance",
-                 y=1.10, fontsize=16)
-    fig.tight_layout(rect=(0, 0, 1, 0.95))
+                 y=0.985, fontsize=16)
+    fig.tight_layout(rect=(0, 0, 1, 0.88))
+    enlarge_report_text(fig)
     output = RESULTS / "annotation_prediction" / "normalized_pca_prediction_stability.png"
     fig.savefig(output, dpi=200, bbox_inches="tight")
     plt.close(fig)
